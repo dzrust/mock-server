@@ -1,7 +1,10 @@
 {
   "name": "mock-server-ui",
   "scripts": {
-    "start:ui": "npm run build:watch"
+    "start:ui": "npm run build:watch",
+    "docker:deploy": "npm run docker:deploy --workspace=ui && npm run docker:deploy --workspace=server",
+    "docker:start": "docker-compose up --build -d",
+    "docker:stop": "docker-compose stop"
   },
   "workspaces": [
     "ui",

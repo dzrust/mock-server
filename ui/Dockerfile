@@ -14,6 +14,6 @@ COPY . .
 
 RUN npm run build
 
-RUN cp -r /build-folder /usr/share/nginx/html
+RUN cp -r /build-folder/public/* /usr/share/nginx/html
 
-EXPOSE 8080
+EXPOSE 80

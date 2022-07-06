@@ -1,6 +1,6 @@
 {
   "name": "mock-server-ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.ts",
   "scripts": {
@@ -8,7 +8,9 @@
     "format": "prettier --write .",
     "start": "webpack serve",
     "build": "webpack -c ./webpack.prod.config.js",
-    "deploy": "npm run build && firebase deploy"
+    "docker:build": "docker build -t dzrust/mock-server-ui:$npm_package_version .",
+    "docker:start": "docker run -d -p 9000:80 dzrust/mock-server-ui:$npm_package_version",
+    "docker:deploy": "npm run docker:build && docker push dzrust/mock-server-ui:$npm_package_version"
   },
   "author": "",
   "license": "ISC",

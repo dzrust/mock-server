@@ -11,7 +11,7 @@ type Props = {
 };
 
 const CollectionModal: FC<Props> = ({ partialCollection, close }) => {
-  const { data: collectionData, isLoading: getDataIsLoading } = useGetCollectionQuery(partialCollection.id);
+  const { data: collectionData, isLoading: getDataIsLoading } = useGetCollectionQuery(partialCollection.uid);
   const [isLoading, setIsLoading] = useState(() => false);
   const [syncData] = usePostPostmanRoutesMutation();
   const requests = useMemo(() => {
