@@ -1,0 +1,8 @@
+.svelte-jsoneditor-react {
+  display: flex;
+  flex: 1;
+}
+
+.jse-main {
+  max-height: 20rem;
+}

@@ -1,0 +1,14 @@
+{
+  "name": "mock-server-ui",
+  "scripts": {
+    "start:ui": "npm run build:watch"
+  },
+  "workspaces": [
+    "ui",
+    "server"
+  ],
+  "dependencies": {
+    "jsoneditor": "^9.9.0",
+    "jsoneditor-react": "^3.1.2"
+  }
+}

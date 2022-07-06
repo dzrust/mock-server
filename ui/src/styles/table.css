@@ -1,0 +1,22 @@
+.virtual-header {
+  cursor: pointer;
+}
+
+.virtual-header-column:hover {
+  background-color: #cecece;
+}
+
+.virtual-row {
+  cursor: pointer;
+  border-top: 1px solid #ccc;
+}
+
+.virtual-row:hover {
+  background-color: #dfdfdf;
+}
+
+.virtual-column {
+  height: 150px;
+  max-height: 150px;
+  overflow: hidden;
+}
