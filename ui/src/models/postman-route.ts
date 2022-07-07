@@ -41,25 +41,29 @@ export const transformCollectionToRoutes = (item: (CollectionFolder | Collection
 };
 
 export const getRoutesFromResponses = (
-  item: CollectionTemplate,
+  collectionTemplate: CollectionTemplate,
 ): { newRoutes: PostmanRoute[]; responses: Response[] } => {
   const newRoutes: PostmanRoute[] = [];
   const newRoutesMap: Map<string, PostmanRoute> = new Map<string, PostmanRoute>();
   const responses: Response[] = [];
-  const url = getUrlFromPostmanRequest(item.request);
-  item.response.forEach((response) => {
+  const url = getUrlFromPostmanRequest(collectionTemplate.request);
+  collectionTemplate.response.forEach((response) => {
     const responseUrl = getUrlFromPostmanRequest(response.originalRequest);
     if (url !== responseUrl) {
       const newRoute =
         newRoutesMap.get(responseUrl) ??
-        transformCollectionRouteToPostmanRoute(item.id, item.name, response.originalRequest);
+        transformCollectionRouteToPostmanRoute(
+          collectionTemplate.id,
+          collectionTemplate.name,
+          response.originalRequest,
+        );
       newRoute.responses = [...newRoute.responses, transformCollectionResponseToPostmanRouteResponse(response)];
       newRoutesMap.set(responseUrl, newRoute);
     } else {
       responses.push(transformCollectionResponseToPostmanRouteResponse(response));
     }
   });
-  newRoutes.forEach((route) => {
+  newRoutesMap.forEach((route) => {
     newRoutes.push(route);
   });
   return {
@@ -68,31 +72,31 @@ export const getRoutesFromResponses = (
   };
 };
 
-export const getUrlFromPostmanRequest = (item: CollectionRequest) => {
-  const variables = getCollectionRequestUrlVariables(item);
-  const queryString = getCollectionRequestUrlQueryString(item);
+export const getUrlFromPostmanRequest = (collectionRequest: CollectionRequest) => {
+  const variables = getCollectionRequestUrlVariables(collectionRequest);
+  const queryString = getCollectionRequestUrlQueryString(collectionRequest);
   const url =
     "/" +
-    item.url.path
+    collectionRequest.url.path
       .map((pathPart) => encodeURIComponent(variables.has(pathPart) ? variables.get(pathPart)! : pathPart))
       .join("/") +
     queryString;
   return url.substring(0, 750);
 };
 
-export const getCollectionRequestUrlVariables = (item: CollectionRequest): Map<string, string> => {
+export const getCollectionRequestUrlVariables = (collectionRequest: CollectionRequest): Map<string, string> => {
   const variableMap = new Map<string, string>();
-  (item.url.variable ?? []).forEach((variable) => {
+  (collectionRequest.url.variable ?? []).forEach((variable) => {
     variableMap.set(`:${variable.key}`, variable.value);
   });
   return variableMap;
 };
 
-export const getCollectionRequestUrlQueryString = (item: CollectionRequest): string => {
+export const getCollectionRequestUrlQueryString = (collectionRequest: CollectionRequest): string => {
   let queryString = "";
   let index = 0;
   const queryStringMap = new Map<string, string>();
-  (item.url.query ?? []).forEach((param, index) => {
+  (collectionRequest.url.query ?? []).forEach((param) => {
     queryStringMap.set(param.key, param.value);
   });
   queryStringMap.forEach((value, key) => {
@@ -105,34 +109,36 @@ export const getCollectionRequestUrlQueryString = (item: CollectionRequest): str
 export const transformCollectionRouteToPostmanRoute = (
   id: string,
   name: string,
-  item: CollectionRequest,
+  collectionRequest: CollectionRequest,
 ): PostmanRoute => {
-  const url = getUrlFromPostmanRequest(item);
+  const url = getUrlFromPostmanRequest(collectionRequest);
   return {
     name: name,
     defaultUrl: url,
-    method: item.method,
+    method: collectionRequest.method,
     responses: [] as Response[],
     postmanId: id,
   } as PostmanRoute;
 };
 
-export const transformCollectionResponseToPostmanRouteResponse = (item: CollectionRequestResponse): Response => {
+export const transformCollectionResponseToPostmanRouteResponse = (
+  collectionRequestResponse: CollectionRequestResponse,
+): Response => {
   const headers = {} as any;
-  (item.header ?? []).forEach((header) => {
+  (collectionRequestResponse.header ?? []).forEach((header) => {
     headers[header.key] = header.value;
   });
   let response = {};
   try {
-    response = JSON.parse(item.body ?? "{}") ?? {};
+    response = JSON.parse(collectionRequestResponse.body ?? "{}") ?? {};
   } catch (err) {
     response = {};
   }
   return {
-    name: item.name ?? "New Response",
-    statusCode: item.code ?? 200,
+    name: collectionRequestResponse.name ?? "New Response",
+    statusCode: collectionRequestResponse.code ?? 200,
     response,
     headers,
-    postmanId: item.id,
+    postmanId: collectionRequestResponse.id,
   } as Response;
 };

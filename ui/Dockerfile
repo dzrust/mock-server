@@ -16,4 +16,6 @@ RUN npm run build
 
 RUN cp -r /build-folder/public/* /usr/share/nginx/html
 
+COPY nginx.conf /etc/nginx/nginx.conf
+
 EXPOSE 80

@@ -1,8 +1,16 @@
 const { Sequelize } = require("sequelize");
 
-const sequelize = new Sequelize("app_db", "db_user", "db_user_pass", {
-  host: "db",
-  port: 3306,
+const DB_CONNECTION = {
+  database: process.env.DATABASE ?? "app_db",
+  user: process.env.DATABASE_USERNAME ?? "db_user",
+  password: process.env.DATABASE_PASSWORD ?? "db_user_pass",
+  host: process.env.HOST ?? "db",
+  port: parseInt(process.env.PORT ?? "3306"),
+};
+
+const sequelize = new Sequelize(DB_CONNECTION.database, DB_CONNECTION.user, DB_CONNECTION.password, {
+  host: DB_CONNECTION.host,
+  port: DB_CONNECTION.port,
   dialect: "mysql",
   logging: function () {},
   pool: {

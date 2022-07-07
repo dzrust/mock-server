@@ -1,6 +1,7 @@
 const { Route } = require("./schemas/route");
 const { Op } = require("sequelize");
 const { Response } = require("./schemas/response");
+const bypassRoute = process.env.BYPASS_ROUTE ?? "/mock-server/admin";
 
 const loadRoute = async (url, method) => {
   const route = await Route.findOne({
@@ -39,8 +40,8 @@ const createResponse = async (route) => {
       routeId: route.id,
     },
   });
-  if (!route.currentExampleId) {
-    route.currentExampleId = response.id;
+  if (route.currentExampleId === undefined) {
+    route.currentExampleId = response[0].id;
     await route.save();
   }
 };
@@ -62,7 +63,7 @@ const handleNoRoute = async (req, res) => {
 
 const loadRoutesFromDB = (app) => {
   app.all("*", (req, res, next) => {
-    if (req.originalUrl.indexOf("/ent/admin") > -1) {
+    if (req.originalUrl.indexOf(bypassRoute) > -1) {
       next();
       return;
     }

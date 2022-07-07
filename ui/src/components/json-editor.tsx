@@ -9,10 +9,10 @@ const SvelteJSONEditor: FC<JSONEditorPropsOptional> = (props) => {
 
   useEffect(() => {
     // create editor
-    if (!refContainer.current && refEditor.current) return;
+    if (!refContainer.current || refEditor.current) return;
     refEditor.current = new JSONEditor({
       target: refContainer.current,
-      props: {},
+      props,
     });
 
     return () => {

@@ -13,6 +13,14 @@ services:
       context: ./server
       dockerfile: ./Dockerfile
     restart: always
+    environment:
+      BYPASS_ROUTE: /ent/admin
+      MYSQL_ROOT_PASSWORD: my_secret_password
+      DATABASE: app_db
+      DATABASE_USER: db_user
+      DATABASE_PASSWORD: db_user_pass
+      DATABASE_HOST: db
+      DATABASE_PORT: 3306
     links:
       - db:db
     ports:
