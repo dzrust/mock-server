@@ -1,9 +1,11 @@
 import { Formik } from "formik";
 import React, { FC } from "react";
 import { Button, Col, Container, Form, Modal, Row, Table } from "react-bootstrap";
+import { useAppDispatch } from "../../hooks";
 import { Response } from "../../models/response";
 import { Route, routeFormModel, RouteFormModelType } from "../../models/route";
 import { useCreateResponseMutation, useGetResponsesQuery, useUpdateRouteMutation } from "../../services/routes";
+import { setError } from "../../slice/app-slice";
 
 type Props = {
   route: Route;
@@ -12,6 +14,7 @@ type Props = {
 };
 
 const RouteModal: FC<Props> = ({ route, close, setResponse }) => {
+  const dispatch = useAppDispatch();
   const { data, refetch } = useGetResponsesQuery(route.id);
   const [create] = useCreateResponseMutation();
   const [updateRoute] = useUpdateRouteMutation();
@@ -24,14 +27,20 @@ const RouteModal: FC<Props> = ({ route, close, setResponse }) => {
       routeId: route.id,
     })
       .then(refetch)
-      .catch(refetch);
+      .catch(() => {
+        refetch();
+        dispatch(setError("Failed to create new response"));
+      });
   const setActiveResponse = (response: Response) =>
     updateRoute({
       ...route,
       currentExampleId: response.id,
     })
       .then(refetch)
-      .catch(refetch);
+      .catch(() => {
+        refetch();
+        dispatch(setError("Failed to set response to active"));
+      });
   const onSubmit = (values: RouteFormModelType) =>
     updateRoute({
       ...route,
@@ -39,7 +48,10 @@ const RouteModal: FC<Props> = ({ route, close, setResponse }) => {
       method: values.method.toUpperCase(),
     })
       .then(close)
-      .catch((err) => console.error(err));
+      .catch(() => {
+        refetch();
+        dispatch(setError("Failed to update route"));
+      });
   return (
     <Formik
       onSubmit={onSubmit}

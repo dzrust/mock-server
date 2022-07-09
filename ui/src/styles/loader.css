@@ -1,0 +1,10 @@
+.loader__container {
+  position: absolute;
+  bottom: 3rem;
+  right: 3rem;
+}
+
+.loader {
+  height: 3rem;
+  width: 3rem;
+}

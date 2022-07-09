@@ -1,9 +1,21 @@
 .virtual-header {
   cursor: pointer;
+  padding: 0 0.75rem;
+}
+
+.virtual-header-column {
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
+  height: 2rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0 1rem;
+  align-items: center;
 }
 
 .virtual-header-column:hover {
-  background-color: #cecece;
+  background-color: #dfdfdf;
 }
 
 .virtual-row {

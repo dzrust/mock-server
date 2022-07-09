@@ -1,6 +1,6 @@
 const { database } = require("./database");
 const { sendError } = require("./error-handler");
-const { saveRoutes } = require("./postman-sync");
+const { syncPostmanRoutes } = require("./postman-sync");
 const { Response } = require("./schemas/response");
 const { Route } = require("./schemas/route");
 const bypassRoute = process.env.BYPASS_ROUTE ?? "/mock-server/admin";
@@ -56,7 +56,7 @@ const loadStaticRoutes = (app) => {
   });
 
   app.post(`${bypassRoute}/postman/sync`, (req, res) => {
-    saveRoutes(req.body)
+    syncPostmanRoutes(req.body)
       .then((results) => {
         res.status(200).json(results);
       })

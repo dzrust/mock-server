@@ -1,12 +1,22 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { Button, Container, Table } from "react-bootstrap";
+import { useAppDispatch } from "../../hooks";
 import { PartialCollection } from "../../models/collection";
 import { useGetCollectionsQuery } from "../../services/postman";
+import { setError } from "../../slice/app-slice";
 import CollectionModal from "./collection-modal";
 
 const SyncPage: FC = () => {
-  const { data: collections } = useGetCollectionsQuery();
+  const dispatch = useAppDispatch();
+  const { data: collections, isError } = useGetCollectionsQuery();
   const [selectedCollection, setSelectedCollection] = useState<PartialCollection | undefined>(() => undefined);
+  useEffect(() => {
+    if (isError) {
+      dispatch(setError("Failed to get postman collections"));
+    } else {
+      dispatch(setError(undefined));
+    }
+  }, [isError]);
   return (
     <Container>
       <h1>Sync Postman Data</h1>

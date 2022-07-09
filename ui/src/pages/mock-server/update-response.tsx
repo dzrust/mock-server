@@ -2,8 +2,10 @@ import { Formik } from "formik";
 import React, { FC, useState } from "react";
 import { Button, Container, Form, Modal } from "react-bootstrap";
 import SvelteJSONEditor from "../../components/json-editor";
+import { useAppDispatch } from "../../hooks";
 import { Response, responseFormModel, ResponseFormModelType } from "../../models/response";
 import { useUpdateResponseMutation } from "../../services/routes";
+import { setError } from "../../slice/app-slice";
 
 type Props = {
   response: Response;
@@ -11,6 +13,7 @@ type Props = {
 };
 
 const UpdateResponseModal: FC<Props> = ({ response, close }) => {
+  const dispatch = useAppDispatch();
   const [update] = useUpdateResponseMutation();
   const [content, setContent] = useState({
     json: undefined,
@@ -24,7 +27,9 @@ const UpdateResponseModal: FC<Props> = ({ response, close }) => {
       routeId: response.routeId,
     })
       .then(close)
-      .catch((err) => console.error(err));
+      .catch(() => {
+        dispatch(setError("Failed to update response"));
+      });
 
   return (
     <Formik

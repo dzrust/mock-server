@@ -1,9 +1,11 @@
 import React, { FC, useMemo, useState } from "react";
 import { Button, Container, Modal, Table } from "react-bootstrap";
+import { useAppDispatch } from "../../hooks";
 import { PartialCollection } from "../../models/collection";
 import { PostmanRoute, transformCollectionToRoutes } from "../../models/postman-route";
 import { useGetCollectionQuery } from "../../services/postman";
 import { usePostPostmanRoutesMutation } from "../../services/routes";
+import { setError } from "../../slice/app-slice";
 
 type Props = {
   partialCollection: PartialCollection;
@@ -11,6 +13,7 @@ type Props = {
 };
 
 const CollectionModal: FC<Props> = ({ partialCollection, close }) => {
+  const dispatch = useAppDispatch();
   const { data: collectionData, isLoading: getDataIsLoading } = useGetCollectionQuery(partialCollection.uid);
   const [isLoading, setIsLoading] = useState(() => false);
   const [syncData] = usePostPostmanRoutesMutation();
@@ -31,6 +34,7 @@ const CollectionModal: FC<Props> = ({ partialCollection, close }) => {
         setIsLoading(false);
       })
       .catch(() => {
+        dispatch(setError("Failed to sync postman data"));
         setIsLoading(false);
       });
   };

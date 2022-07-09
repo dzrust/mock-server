@@ -10,17 +10,26 @@ import * as R from "ramda";
 import { FixedSizeList as List } from "react-window";
 
 import "../../styles/table.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronDown, faChevronUp } from "@fortawesome/pro-solid-svg-icons";
+import { useAppDispatch } from "../../hooks";
+import { setError } from "../../slice/app-slice";
+
+const escapeRegExp = (text: string) => {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+};
 
 const RoutesPage: FC = () => {
+  const dispatch = useAppDispatch();
   const [route, setRoute] = useState<Route | undefined>(() => undefined);
   const [response, setResponse] = useState<Response | undefined>(() => undefined);
   const [searchText, setSearchText] = useState(() => "");
   const [sortProp, setSortProp] = useState<keyof Route | undefined>(() => undefined);
   const [isDescending, setIsDescending] = useState(() => false);
   const [create] = useCreateRouteMutation();
-  const { data, refetch } = useGetRoutesQuery();
+  const { data, refetch, isError } = useGetRoutesQuery();
   const onTableHeaderClick = (newSortProp: keyof Route) => {
-    if (sortProp === undefined) {
+    if (sortProp !== newSortProp) {
       setSortProp(newSortProp);
     } else if (sortProp === newSortProp && !isDescending) {
       setIsDescending(true);
@@ -30,12 +39,16 @@ const RoutesPage: FC = () => {
     }
   };
   const getASCDSCHeader = (newSortProp: keyof Route) => {
-    return sortProp !== newSortProp ? "" : isDescending ? "(DSC)" : "(ASC)";
+    return sortProp !== newSortProp ? null : isDescending ? (
+      <FontAwesomeIcon icon={faChevronDown} />
+    ) : (
+      <FontAwesomeIcon icon={faChevronUp} />
+    );
   };
   const routes = useMemo(() => {
     if (!data) return [];
     R.sortWith<any>([R.descend<any>(R.prop("name"))]);
-    const regex = new RegExp(searchText ?? "", "gi");
+    const regex = new RegExp(escapeRegExp(searchText) ?? "", "gi");
     const sort = sortProp
       ? R.sortWith<Route>([
           isDescending
@@ -56,13 +69,23 @@ const RoutesPage: FC = () => {
       method: "GET",
     })
       .then(refetch)
-      .catch(refetch);
+      .catch(() => {
+        refetch();
+        dispatch(setError("Failed to create new route"));
+      });
   };
   useEffect(() => {
     if (route) {
       setRoute(data?.find((data) => data.id === route.id));
     }
   }, [data]);
+  useEffect(() => {
+    if (isError) {
+      dispatch(setError("Failed to get routes"));
+    } else {
+      dispatch(setError(undefined));
+    }
+  }, [isError]);
   return (
     <Container>
       <h1>Routes</h1>

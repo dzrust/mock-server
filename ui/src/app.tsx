@@ -1,12 +1,17 @@
 import React, { FC } from "react";
 import { Container, Nav, Navbar, NavbarBrand } from "react-bootstrap";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import Error from "./components/error";
+import Loader from "./components/loader";
+import { useAppSelector } from "./hooks";
 import RoutesPage from "./pages/mock-server/routes";
 import SyncPage from "./pages/sync-postman/sync";
+import { isLoading as getIsLoading } from "./slice/app-slice";
 
 import "./styles/app.css";
 
 const App: FC = () => {
+  const isLoading = useAppSelector(getIsLoading);
   return (
     <BrowserRouter>
       <Navbar bg="dark" variant="dark" fixed="top" collapseOnSelect expand="lg">
@@ -26,6 +31,8 @@ const App: FC = () => {
         </Container>
       </Navbar>
       <Container className="app-container">
+        {isLoading ? <Loader /> : null}
+        <Error />
         <Routes>
           <Route path="/" element={<RoutesPage />} />
           <Route path="/sync" element={<SyncPage />} />
