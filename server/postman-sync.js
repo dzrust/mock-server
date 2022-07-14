@@ -14,21 +14,24 @@ exports.syncPostmanRoutes = async (routes) => {
   const results = createBaseResultsObject();
   for (let i = 0, { length } = routes; i < length; i++) {
     const route = routes[i];
-    const {dbRoute, needsUpdate} = createRoute(route)
-    let firstResponseId = createResponses(route, dbRoute, results)
-    if (dbRoute[0].currentExampleId === undefined && firstResponseId !== undefined) {
-      dbRoute[0].currentExampleId = firstResponseId;
+    let needsUpdate = false;
+    const result = await createRoute(route, results);
+    const { dbRoute } = result;
+    needsUpdate = result.needsUpdate;
+    if (!dbRoute) continue;
+    let firstResponseId = await createResponses(route, dbRoute, results);
+    if (dbRoute.currentExampleId === undefined && firstResponseId !== undefined) {
+      dbRoute.currentExampleId = firstResponseId;
       needsUpdate = true;
     }
     if (needsUpdate) {
-      await dbRoute[0].save();
+      await dbRoute.save();
     }
   }
   return results;
 };
 
-
-const createRoute = async (route) => {
+const createRoute = async (route, results) => {
   const routeToCreate = {
     name: route.name,
     defaultUrl: route.defaultUrl,
@@ -43,29 +46,28 @@ const createRoute = async (route) => {
       defaults: routeToCreate,
       where: { defaultUrl: route.defaultUrl },
     });
+    if (dbRoute[1]) {
+      results.createdRoutes.push(route.postmanId);
+    } else {
+      results.updatedRoutes.push(route.postmanId);
+      dbRoute[0].name = route.name;
+      dbRoute[0].defaultUrl = route.defaultUrl;
+      dbRoute[0].method = route.method;
+      dbRoute[0].postmanId = route.postmanId;
+      needsUpdate = true;
+    }
   } catch (err) {
     results.failedRoutes.push({ postmanId: route.postmanId, error: err });
-    return;
   }
 
-  if (dbRoute[1]) {
-    results.createdRoutes.push(route.postmanId);
-  } else {
-    results.updatedRoutes.push(route.postmanId);
-    dbRoute[0].name = route.name;
-    dbRoute[0].defaultUrl = route.defaultUrl;
-    dbRoute[0].method = route.method;
-    dbRoute[0].postmanId = route.postmanId;
-    needsUpdate = true;
-  }
-  return {dbRoute, needsUpdate};
-}
+  return { dbRoute: dbRoute[0], needsUpdate };
+};
 
 const createResponses = async (route, dbRoute, results) => {
   let firstResponseId = undefined;
   for (let j = 0, lengthj = route.responses.length; j < lengthj; j++) {
     const response = route.responses[j];
-    response.routeId = dbRoute[0].id;
+    response.routeId = dbRoute.id;
     try {
       const dbResponse = await Response.findOrCreate({
         defaults: response,
@@ -91,4 +93,4 @@ const createResponses = async (route, dbRoute, results) => {
     }
   }
   return firstResponseId;
-}
+};

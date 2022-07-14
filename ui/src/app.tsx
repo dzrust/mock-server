@@ -30,7 +30,7 @@ const App: FC = () => {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <Container className="app-container">
+      <Container className="app-container" fluid>
         {isLoading ? <Loader /> : null}
         <Error />
         <Routes>
