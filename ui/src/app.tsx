@@ -15,7 +15,7 @@ const App: FC = () => {
   return (
     <BrowserRouter>
       <Navbar bg="dark" variant="dark" fixed="top" collapseOnSelect expand="lg">
-        <Container>
+        <Container fluid>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav>
