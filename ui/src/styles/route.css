@@ -1,5 +1,6 @@
 .route-container {
   border-right: 1px solid #ccc;
+  box-shadow: 4px 0px 4px 0px #ebebeb;
 }
 
 .route {
