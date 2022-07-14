@@ -10,6 +10,13 @@ export const routeAPI = createApi({
   tagTypes: ["Responses", "Routes"],
   baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:9001/ent/admin" }),
   endpoints: (builder) => ({
+    postSyncDatabase: builder.mutation<void, void>({
+      query: () => ({
+        url: `sync`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Responses", "Routes"],
+    }),
     getResponses: builder.query<Response[], number>({
       query: (id) => `routes/${id}/responses`,
       providesTags: ["Responses"],
@@ -81,5 +88,6 @@ export const {
   useCreateResponseMutation,
   useGetResponsesQuery,
   useUpdateResponseMutation,
-  usePostPostmanRoutesMutation
+  usePostPostmanRoutesMutation,
+  usePostSyncDatabaseMutation
 } = routeAPI;

@@ -1,18 +1,17 @@
 version: "3.7"
 services:
-  ui:
-    build:
-      context: ./ui
-      dockerfile: ./Dockerfile
-    restart: always
-    ports:
-      - 9000:80
+  # ui:
+  #   build:
+  #     context: ./ui
+  #     dockerfile: ./Dockerfile
+  #   restart: always
+  #   ports:
+  #     - 9000:80
 
   server:
     build:
       context: ./server
       dockerfile: ./Dockerfile
-    restart: always
     environment:
       BYPASS_ROUTE: /ent/admin
       MYSQL_ROOT_PASSWORD: my_secret_password

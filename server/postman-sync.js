@@ -28,7 +28,7 @@ exports.syncPostmanRoutes = async (routes) => {
 };
 
 
-const createRoute = (route) => {
+const createRoute = async (route) => {
   const routeToCreate = {
     name: route.name,
     defaultUrl: route.defaultUrl,
@@ -61,7 +61,7 @@ const createRoute = (route) => {
   return {dbRoute, needsUpdate};
 }
 
-const createResponses = (route, dbRoute, results) => {
+const createResponses = async (route, dbRoute, results) => {
   let firstResponseId = undefined;
   for (let j = 0, lengthj = route.responses.length; j < lengthj; j++) {
     const response = route.responses[j];

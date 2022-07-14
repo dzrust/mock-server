@@ -1,11 +1,12 @@
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useMemo } from "react";
 import { Button, Container, Modal, Table } from "react-bootstrap";
-import { useAppDispatch } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import { PartialCollection } from "../../models/collection";
 import { PostmanRoute, transformCollectionToRoutes } from "../../models/postman-route";
 import { useGetCollectionQuery } from "../../services/postman";
 import { usePostPostmanRoutesMutation } from "../../services/routes";
 import { setError } from "../../slice/app-slice";
+import { isLoading as getIsLoading } from "../../slice/app-slice";
 
 type Props = {
   partialCollection: PartialCollection;
@@ -14,8 +15,8 @@ type Props = {
 
 const CollectionModal: FC<Props> = ({ partialCollection, close }) => {
   const dispatch = useAppDispatch();
+  const isLoading = useAppSelector(getIsLoading);
   const { data: collectionData, isLoading: getDataIsLoading } = useGetCollectionQuery(partialCollection.uid);
-  const [isLoading, setIsLoading] = useState(() => false);
   const [syncData] = usePostPostmanRoutesMutation();
   const requests = useMemo(() => {
     const postmanRequests: PostmanRoute[] = [];
@@ -27,15 +28,12 @@ const CollectionModal: FC<Props> = ({ partialCollection, close }) => {
 
   const syncLocally = () => {
     if (isLoading) return;
-    setIsLoading(true);
     syncData(requests)
       .then((results) => {
         console.log(results);
-        setIsLoading(false);
       })
       .catch(() => {
         dispatch(setError("Failed to sync postman data"));
-        setIsLoading(false);
       });
   };
 
