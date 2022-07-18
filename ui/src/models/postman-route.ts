@@ -94,14 +94,8 @@ export const getCollectionRequestUrlVariables = (collectionRequest: CollectionRe
 
 export const getCollectionRequestUrlQueryString = (collectionRequest: CollectionRequest): string => {
   let queryString = "";
-  let index = 0;
-  const queryStringMap = new Map<string, string>();
-  (collectionRequest.url.query ?? []).forEach((param) => {
-    queryStringMap.set(param.key, param.value);
-  });
-  queryStringMap.forEach((value, key) => {
-    queryString += `${index === 0 ? "?" : "&"}${key}=${encodeURIComponent(value)}`;
-    index++;
+  (collectionRequest.url.query ?? []).forEach((param, index) => {
+    queryString += `${index === 0 ? "?" : "&"}${param.key}=${encodeURIComponent(param.value)}`;
   });
   return queryString;
 };

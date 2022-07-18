@@ -10,7 +10,7 @@ import * as R from "ramda";
 import { FixedSizeList as List } from "react-window";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faSyncAlt } from "@fortawesome/pro-solid-svg-icons";
-import { useAppDispatch } from "../../hooks";
+import { useAppDispatch, useWindowHeightAndWidth } from "../../hooks";
 import { setError } from "../../slice/app-slice";
 
 import "../../styles/route.css";
@@ -24,6 +24,7 @@ const RoutesPage: FC = () => {
   const [route, setRoute] = useState<Route | undefined>(() => undefined);
   const [response, setResponse] = useState<Response | undefined>(() => undefined);
   const [searchText, setSearchText] = useState(() => "");
+  const {windowHeight} = useWindowHeightAndWidth()
   const [create] = useCreateRouteMutation();
   const { data, refetch, isError } = useGetRoutesQuery();
   const routes = useMemo(() => {
@@ -83,7 +84,7 @@ const RoutesPage: FC = () => {
           </Row>
           <Row className="mt-3">
             <List
-              height={window.innerHeight - (64 + 38 + 32)}
+              height={windowHeight - (64 + 38 + 32)}
               itemCount={routes.length}
               itemSize={55}
               width="100%"
@@ -117,7 +118,7 @@ const RoutesPage: FC = () => {
         <Col
           md={9}
           className="mt-3"
-          style={{ maxHeight: window.innerHeight - 64, height: window.innerHeight - 64, overflowY: "scroll" }}
+          style={{ maxHeight: windowHeight - 64, height: windowHeight - 64, overflowY: "scroll" }}
         >
           {route ? (
             <SelectedRouteView route={route} setResponse={(response?: Response) => setResponse(response)} />
