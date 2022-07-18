@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FC, Fragment, useEffect, useMemo, useState } from "react";
+import React, { ChangeEvent, CSSProperties, FC, Fragment, useEffect, useMemo, useState } from "react";
 import { Button, Col, FormControl, Row } from "react-bootstrap";
 import { Response } from "../../models/response";
 import { Route } from "../../models/route";
@@ -10,10 +10,11 @@ import * as R from "ramda";
 import { FixedSizeList as List } from "react-window";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faSyncAlt } from "@fortawesome/pro-solid-svg-icons";
-import { useAppDispatch, useWindowHeightAndWidth } from "../../hooks";
-import { setError } from "../../slice/app-slice";
+import { useAppDispatch, useAppSelector, useWindowHeightAndWidth } from "../../hooks";
+import { addNotification, isLoading as getIsLoading } from "../../slice/app-slice";
 
 import "../../styles/route.css";
+import { createError } from "../../models/notification";
 
 const escapeRegExp = (text: string) => {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
@@ -24,9 +25,14 @@ const RoutesPage: FC = () => {
   const [route, setRoute] = useState<Route | undefined>(() => undefined);
   const [response, setResponse] = useState<Response | undefined>(() => undefined);
   const [searchText, setSearchText] = useState(() => "");
-  const {windowHeight} = useWindowHeightAndWidth()
+  const isLoading = useAppSelector(getIsLoading);
+  const { windowHeight } = useWindowHeightAndWidth();
   const [create] = useCreateRouteMutation();
   const { data, refetch, isError } = useGetRoutesQuery();
+  const containerStyle = useMemo(() => {
+    const height = windowHeight - 72;
+    return { maxHeight: height, height, overflowY: "auto" } as CSSProperties;
+  }, [windowHeight]);
   const routes = useMemo(() => {
     if (!data) return [];
     R.sortWith<any>([R.descend<any>(R.prop("name"))]);
@@ -44,10 +50,15 @@ const RoutesPage: FC = () => {
       url,
       method: "GET",
     })
-      .then(refetch)
-      .catch(() => {
+      .then((result) => {
+        if ((result as any).error) {
+          dispatch(addNotification(createError("Failed to create new route")));
+        }
         refetch();
-        dispatch(setError("Failed to create new route"));
+      })
+      .catch(() => {
+        dispatch(addNotification(createError("Failed to create new route")));
+        refetch();
       });
   };
   useEffect(() => {
@@ -57,9 +68,7 @@ const RoutesPage: FC = () => {
   }, [data]);
   useEffect(() => {
     if (isError) {
-      dispatch(setError("Failed to get routes"));
-    } else {
-      dispatch(setError(undefined));
+      dispatch(addNotification(createError("Failed to get routes")));
     }
   }, [isError]);
   return (
@@ -74,17 +83,17 @@ const RoutesPage: FC = () => {
               />
             </Col>
             <Col>
-              <Button onClick={createRoute} variant="primary">
+              <Button onClick={createRoute} variant="primary" disabled={isLoading}>
                 <FontAwesomeIcon icon={faPlusCircle} />
               </Button>
-              <Button onClick={refetch} className="mx-3" variant="secondary">
+              <Button onClick={refetch} className="mx-3" variant="secondary" disabled={isLoading}>
                 <FontAwesomeIcon icon={faSyncAlt} />
               </Button>
             </Col>
           </Row>
           <Row className="mt-3">
             <List
-              height={windowHeight - (64 + 38 + 32)}
+              height={((containerStyle.height as number) ?? 0) - (38 + 32)}
               itemCount={routes.length}
               itemSize={55}
               width="100%"
@@ -115,11 +124,7 @@ const RoutesPage: FC = () => {
             </List>
           </Row>
         </Col>
-        <Col
-          md={9}
-          className="mt-3"
-          style={{ maxHeight: windowHeight - 64, height: windowHeight - 64, overflowY: "scroll" }}
-        >
+        <Col md={9} className="mt-3" style={containerStyle}>
           {route ? (
             <SelectedRouteView route={route} setResponse={(response?: Response) => setResponse(response)} />
           ) : null}

@@ -1,13 +1,14 @@
-import { faP, faUserAstronaut } from "@fortawesome/pro-solid-svg-icons";
+import { faUserAstronaut } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Formik } from "formik";
 import React, { FC, Fragment } from "react";
 import { Button, Col, Form, Row, Table } from "react-bootstrap";
 import { useAppDispatch } from "../../hooks";
+import { createError } from "../../models/notification";
 import { Response } from "../../models/response";
 import { Route, routeFormModel, RouteFormModelType } from "../../models/route";
 import { useCreateResponseMutation, useGetResponsesQuery, useUpdateRouteMutation } from "../../services/routes";
-import { setError } from "../../slice/app-slice";
+import { addNotification } from "../../slice/app-slice";
 
 type Props = {
   route: Route;
@@ -30,7 +31,7 @@ const SelectedRouteView: FC<Props> = ({ route, setResponse }) => {
       .then(refetch)
       .catch(() => {
         refetch();
-        dispatch(setError("Failed to create new response"));
+        dispatch(addNotification(createError("Failed to create new response")));
       });
   const setActiveResponse = (response: Response) =>
     updateRoute({
@@ -40,7 +41,7 @@ const SelectedRouteView: FC<Props> = ({ route, setResponse }) => {
       .then(refetch)
       .catch(() => {
         refetch();
-        dispatch(setError("Failed to set response to active"));
+        dispatch(addNotification(createError("Failed to set response to active")));
       });
   const onSubmit = (values: RouteFormModelType) =>
     updateRoute({
@@ -51,7 +52,7 @@ const SelectedRouteView: FC<Props> = ({ route, setResponse }) => {
       .then()
       .catch(() => {
         refetch();
-        dispatch(setError("Failed to update route"));
+        dispatch(addNotification(createError("Failed to update route")));
       });
   return (
     <Formik

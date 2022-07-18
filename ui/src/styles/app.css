@@ -1,3 +1,7 @@
 .app-container {
   margin-top: 56px;
 }
+
+.clickable {
+  cursor: pointer;
+}

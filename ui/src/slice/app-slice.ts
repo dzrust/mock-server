@@ -8,17 +8,18 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 import { RootState } from "../store";
+import { Notification } from "../models/notification";
 
 // Define a type for the slice state
 interface AppState {
   loadingCount: number;
-  error?: string;
+  notifications: Notification[];
 }
 
 // Define the initial state using that type
 const initialState: AppState = {
   loadingCount: 0,
-  error: undefined,
+  notifications: [],
 };
 
 export const appSlice = createSlice({
@@ -32,13 +33,16 @@ export const appSlice = createSlice({
     stopLoading: (state) => {
       state.loadingCount = Math.max(0, state.loadingCount - 1);
     },
-    setError: (state, payload: PayloadAction<string | undefined>) => {
-      state.error = payload.payload;
+    addNotification: (state, payload: PayloadAction<Notification>) => {
+      state.notifications = [payload.payload, ...state.notifications];
+    },
+    removeNotification: (state, payload: PayloadAction<number>) => {
+      state.notifications = state.notifications.filter((_, index) => index !== payload.payload);
     },
   },
 });
 
-export const { startLoading, stopLoading, setError } = appSlice.actions;
+export const { startLoading, stopLoading, addNotification, removeNotification } = appSlice.actions;
 
 export const isLoading = (state: RootState) => state.app.loadingCount > 0;
 

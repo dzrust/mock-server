@@ -1,17 +1,21 @@
-import React, { FC, useEffect, useState } from "react";
-import { Button, Container, Table } from "react-bootstrap";
+import { faPlug, faSyncAlt } from "@fortawesome/pro-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { CSSProperties, FC, Fragment, useEffect, useMemo, useState } from "react";
+import { Button, Col, Row, Table } from "react-bootstrap";
 import ConfirmationModal from "../../components/confirmation-modal";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector, useWindowHeightAndWidth } from "../../hooks";
 import { PartialCollection } from "../../models/collection";
+import { createError } from "../../models/notification";
 import { useGetCollectionsQuery } from "../../services/postman";
 import { usePostSyncDatabaseMutation } from "../../services/routes";
-import { setError, isLoading as getIsLoading } from "../../slice/app-slice";
-import CollectionModal from "./collection-modal";
+import { addNotification, isLoading as getIsLoading } from "../../slice/app-slice";
+import SelectedCollectionView from "./selected-collection-view";
 
 const SyncPage: FC = () => {
   const dispatch = useAppDispatch();
   const isLoading = useAppSelector(getIsLoading);
-  const { data: collections, isError } = useGetCollectionsQuery();
+  const { windowHeight } = useWindowHeightAndWidth();
+  const { data: collections, isError, refetch } = useGetCollectionsQuery();
   const [isConfirming, setIsConfirming] = useState(() => false);
   const [selectedCollection, setSelectedCollection] = useState<PartialCollection | undefined>(() => undefined);
   const [postSyncDatabase] = usePostSyncDatabaseMutation();
@@ -19,42 +23,57 @@ const SyncPage: FC = () => {
     if (isLoading) return;
     postSyncDatabase()
       .then(() => setIsConfirming(false))
-      .catch(() => dispatch(setError("Failed to sync postman data")));
+      .catch(() => dispatch(addNotification(createError("Failed to sync postman data"))));
   };
   useEffect(() => {
     if (isError) {
-      dispatch(setError("Failed to get postman collections"));
-    } else {
-      dispatch(setError(undefined));
+      dispatch(addNotification(createError("Failed to get postman collections")));
     }
   }, [isError]);
+  const leftWindowContainerStyle = useMemo(() => {
+    const height = windowHeight - 143;
+    return { maxHeight: height, height, overflowY: "auto" } as CSSProperties;
+  }, [windowHeight]);
+  const rightWindowContainerStyle = useMemo(() => {
+    const height = windowHeight - 75;
+    return { maxHeight: height, height, overflowY: "auto" } as CSSProperties;
+  }, [windowHeight]);
   return (
-    <Container>
-      <h1>Sync Postman Data</h1>
-      <Button onClick={() => setIsConfirming(true)} variant="warning">
-        Sync Database
-      </Button>
-      <Table hover>
-        <thead>
-          <tr>
-            <td>Name</td>
-            <td>Open</td>
-          </tr>
-        </thead>
-        <tbody>
-          {(collections?.collections ?? []).map((collection) => (
-            <tr key={collection.id}>
-              <td>{collection.name}</td>
-              <td>
-                <Button onClick={() => setSelectedCollection(collection)}>Open</Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-      {selectedCollection ? (
-        <CollectionModal close={() => setSelectedCollection(undefined)} partialCollection={selectedCollection} />
-      ) : null}
+    <Fragment>
+      <Row>
+        <Col md={3} className="route-container">
+          <Row className="mt-3">
+            <Col>
+              <Button onClick={() => setIsConfirming(true)} variant="warning" disabled={isLoading}>
+                <span className="mx-2">Sync Database</span>
+                <FontAwesomeIcon icon={faPlug} />
+              </Button>
+            </Col>
+            <Col>
+              <Button onClick={refetch} className="mx-3" variant="secondary" disabled={isLoading}>
+                <FontAwesomeIcon icon={faSyncAlt} />
+              </Button>
+            </Col>
+          </Row>
+          <hr />
+          <Row className="mt-3" style={leftWindowContainerStyle}>
+            <Col>
+              <Table hover>
+                <tbody>
+                  {(collections?.collections ?? []).map((collection) => (
+                    <tr key={collection.id} onClick={() => setSelectedCollection(collection)} className="clickable">
+                      <td>{collection.name}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Col>
+          </Row>
+        </Col>
+        <Col md={9} className="mt-3" style={rightWindowContainerStyle}>
+          {selectedCollection ? <SelectedCollectionView partialCollection={selectedCollection} /> : null}
+        </Col>
+      </Row>
       {isConfirming ? (
         <ConfirmationModal
           close={() => setIsConfirming(false)}
@@ -64,7 +83,7 @@ const SyncPage: FC = () => {
           confirmationText="If you perform this action it will clear out all of the data from the database"
         />
       ) : null}
-    </Container>
+    </Fragment>
   );
 };
 

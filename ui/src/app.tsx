@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { Container, Nav, Navbar, NavbarBrand } from "react-bootstrap";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import Error from "./components/error";
+import NotificationDisplay from "./components/notifications";
 import Loader from "./components/loader";
 import { useAppSelector } from "./hooks";
 import RoutesPage from "./pages/mock-server/routes";
@@ -32,7 +32,7 @@ const App: FC = () => {
       </Navbar>
       <Container className="app-container" fluid>
         {isLoading ? <Loader /> : null}
-        <Error />
+        <NotificationDisplay />
         <Routes>
           <Route path="/" element={<RoutesPage />} />
           <Route path="/sync" element={<SyncPage />} />

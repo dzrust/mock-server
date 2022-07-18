@@ -3,9 +3,10 @@ import React, { FC, useState } from "react";
 import { Button, Container, Form, Modal } from "react-bootstrap";
 import SvelteJSONEditor from "../../components/json-editor";
 import { useAppDispatch } from "../../hooks";
+import { createError } from "../../models/notification";
 import { Response, responseFormModel, ResponseFormModelType } from "../../models/response";
 import { useUpdateResponseMutation } from "../../services/routes";
-import { setError } from "../../slice/app-slice";
+import { addNotification } from "../../slice/app-slice";
 
 type Props = {
   response: Response;
@@ -28,7 +29,7 @@ const UpdateResponseModal: FC<Props> = ({ response, close }) => {
     })
       .then(close)
       .catch(() => {
-        dispatch(setError("Failed to update response"));
+        dispatch(addNotification(createError("Failed to update response")));
       });
 
   return (
