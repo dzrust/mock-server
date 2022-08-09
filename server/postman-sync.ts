@@ -1,7 +1,8 @@
-const { Response } = require("./schemas/response");
-const { Route } = require("./schemas/route");
+import { PostmanBulkInsertResult } from "./models/postman-bulk-insert-result";
+import { PostmanRoute } from "./models/postman-route";
+import { upsertRoute } from "./schemas/route";
 
-const createBaseResultsObject = () => ({
+const createBaseResultsObject = (): PostmanBulkInsertResult => ({
   createdRoutes: [],
   updatedRoutes: [],
   failedRoutes: [],
@@ -10,28 +11,28 @@ const createBaseResultsObject = () => ({
   failedResponses: [],
 });
 
-exports.syncPostmanRoutes = async (routes) => {
+export const syncPostmanRoutes = (routes: PostmanRoute[]) => {
   const results = createBaseResultsObject();
   for (let i = 0, { length } = routes; i < length; i++) {
     const route = routes[i];
     let needsUpdate = false;
-    const result = await createRoute(route, results);
+    const result = createRoute(route, results);
     const { dbRoute } = result;
     needsUpdate = result.needsUpdate;
     if (!dbRoute) continue;
-    let firstResponseId = await createResponses(route, dbRoute, results);
+    let firstResponseId = createResponses(route, dbRoute, results);
     if (dbRoute.currentExampleId === undefined && firstResponseId !== undefined) {
       dbRoute.currentExampleId = firstResponseId;
       needsUpdate = true;
     }
     if (needsUpdate) {
-      await dbRoute.save();
+      dbRoute.save();
     }
   }
   return results;
 };
 
-const createRoute = async (route, results) => {
+export const createRoute = (route: PostmanRoute, results: PostmanBulkInsertResult) => {
   const routeToCreate = {
     name: route.name,
     defaultUrl: route.defaultUrl,
@@ -42,10 +43,7 @@ const createRoute = async (route, results) => {
   let dbRoute;
   let needsUpdate = false;
   try {
-    dbRoute = await Route.findOrCreate({
-      defaults: routeToCreate,
-      where: { defaultUrl: route.defaultUrl },
-    });
+    upsertRoute(routeToCreate);
     if (dbRoute[1]) {
       results.createdRoutes.push(route.postmanId);
     } else {
@@ -63,13 +61,13 @@ const createRoute = async (route, results) => {
   return { dbRoute: dbRoute[0], needsUpdate };
 };
 
-const createResponses = async (route, dbRoute, results) => {
+export const createResponses = (route: PostmanRoute, dbRoute, results: PostmanBulkInsertResult) => {
   let firstResponseId = undefined;
   for (let j = 0, lengthj = route.responses.length; j < lengthj; j++) {
     const response = route.responses[j];
     response.routeId = dbRoute.id;
     try {
-      const dbResponse = await Response.findOrCreate({
+      const dbResponse = Response.findOrCreate({
         defaults: response,
         where: { postmanId: response.postmanId },
       });
@@ -80,7 +78,7 @@ const createResponses = async (route, dbRoute, results) => {
         dbResponse[0].headers = response.headers;
         dbResponse[0].postmanId = response.postmanId;
         dbResponse[0].routeId = dbRoute[0].id;
-        await dbResponse[0].save();
+        dbResponse[0].save();
         results.updatedResponses.push(response.postmanId);
       } else {
         results.createdResponses.push(response.postmanId);
