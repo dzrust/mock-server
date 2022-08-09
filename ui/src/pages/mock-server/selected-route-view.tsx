@@ -64,6 +64,7 @@ const SelectedRouteView: FC<Props> = ({ route, setResponse }) => {
           method: route.method,
         } as RouteFormModelType
       }
+      enableReinitialize
       validationSchema={routeFormModel}
     >
       {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (

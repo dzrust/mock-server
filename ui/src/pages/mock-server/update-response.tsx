@@ -43,6 +43,7 @@ const UpdateResponseModal: FC<Props> = ({ response, close }) => {
           headers: response.headers,
         } as ResponseFormModelType
       }
+      enableReinitialize
       validationSchema={responseFormModel}
     >
       {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (

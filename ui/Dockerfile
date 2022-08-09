@@ -8,6 +8,8 @@ WORKDIR /build-folder
 
 COPY package*.json ./
 
+COPY .npmrc ./
+
 RUN npm install
 
 COPY . . 
