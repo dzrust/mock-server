@@ -1,7 +1,6 @@
 import { Request, Response, Application } from "express";
-import { MockResponse } from "./models/response";
-import { createResponse, getResponse } from "./schemas/response";
-import { createRoute, getRouteByUrlAndMethod, updateRoute } from "./schemas/route";
+import { createResponse } from "./schemas/response";
+import { createRouteAndResponse, getRouteByUrlAndMethod } from "./schemas/route";
 
 const bypassRoute = process.env.BYPASS_ROUTE ?? "/mock-server/admin";
 
@@ -11,21 +10,11 @@ const responseNotInDb = (res: Response) => res.status(404).json({ error: "Respon
 
 const handleNoRoute = async (req: Request, res: Response) => {
   try {
-    const response: Omit<MockResponse, "id"> = {
-      name: "New Response",
-      statusCode: 404,
-      response: JSON.stringify({}),
-      headers: JSON.stringify({}),
-    };
-    const id = createRoute({
+    createRouteAndResponse({
       name: "New Route",
       defaultUrl: req.originalUrl,
-      url: req.originalUrl,
       method: req.method,
-      responses: [response],
-      curentExample: response,
     });
-    createResponse();
     routeNotInDb(res);
   } catch (err) {
     console.error(err);
@@ -45,23 +34,21 @@ export const loadRoutesFromDB = (app: Application) => {
         if (!route) {
           handleNoRoute(req, res);
         } else {
-          const response = getResponse(route.currentExampleId ?? "");
-          if (!response) {
-            const id = createResponse({
+          if (!route.currentExample) {
+            createResponse({
               name: "New Response",
               statusCode: 404,
               response: JSON.stringify({}),
               headers: JSON.stringify({}),
               routeId: route.id,
             });
-            route.currentExampleId = id as any;
-            updateRoute(route);
             responseNotInDb(res);
           } else {
-            Object.keys(response.headers).forEach((header) => {
-              res.append(header, response.headers[header]);
+            const headers = JSON.parse(route.currentExample.headers ?? {});
+            Object.keys(headers).forEach((header) => {
+              res.append(header, headers[header]);
             });
-            res.status(response.statusCode).json(response.response);
+            res.status(route.currentExample.statusCode).json(JSON.parse(route.currentExample.response));
           }
         }
       } catch (err) {

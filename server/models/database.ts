@@ -7,7 +7,7 @@ let realm: Realm;
 export const loadRealm = async (onSuccess: Function, onFailure: Function) => {
   try {
     realm = await Realm.open({
-      path: "mockserver-realm",
+      path: "mockserver.realm",
       schema: [RouteSchema, ResponseSchema],
     });
     onSuccess();
@@ -24,10 +24,10 @@ export const closeRealm = () => {
 
 export const getRealm = () => {
   if (!realm) {
-    throw "You must open the realm before using it";
+    throw new Error("You must open the realm before using it");
   }
   if (realm.isClosed) {
-    throw "The realm has been closed";
+    throw new Error("The realm has been closed");
   }
 
   return realm;

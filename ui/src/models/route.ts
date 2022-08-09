@@ -1,4 +1,5 @@
 import * as yup from "yup";
+import { Response } from "./response";
 
 export type Route = {
   id: number;
@@ -6,13 +7,13 @@ export type Route = {
   defaultUrl: string;
   url?: string;
   method: string;
-  currentExampleId?: number;
+  currentExample?: Response;
   postmanId?: string;
 };
 
 export const routeFormModel = yup.object().shape({
   name: yup.string().required(),
-  url: yup.string().required(),
+  url: yup.string(),
   method: yup.string().required(),
 });
 

@@ -1,12 +1,12 @@
 {
   "name": "mock-server-backend",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:local": "ts-node index.ts",
     "docker:build": "docker build -t dzrust/mock-server-backend:$npm_package_version .",
+    "docker:build:no-cache": "docker build --no-cache -t dzrust/mock-server-backend:$npm_package_version .",
     "docker:start": "docker run -d -p 9001:8080 dzrust/mock-server-backend:$npm_package_version",
     "docker:deploy": "npm run docker:build && docker push dzrust/mock-server-backend:$npm_package_version"
   },

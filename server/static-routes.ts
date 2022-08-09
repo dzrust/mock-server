@@ -1,15 +1,20 @@
 import { Application } from "express";
 import { sendError } from "./error-handler";
-import { syncPostmanRoutes } from "./postman-sync";
 import { createResponse, getResponsesByRouteId, updateResponse } from "./schemas/response";
-import { createRoute, getRoutes, updateRoute } from "./schemas/route";
+import { bulkInsertPostmanRoutes, createRouteAndResponse, getRoutes, updateRoute } from "./schemas/route";
 
 const bypassRoute = process.env.BYPASS_ROUTE ?? "/mock-server/admin";
 
 export const loadStaticRoutes = (app: Application) => {
   app.get(`${bypassRoute}/routes`, (req, res) => {
     try {
-      res.json(getRoutes());
+      res.json(
+        getRoutes().map((route) => ({
+          ...route.toJSON(),
+          responses: [],
+          currentExample: (route.currentExample as any)?.toJSON(),
+        })),
+      );
     } catch (err) {
       sendError(req, res, err, { error: "Failed to get routes" });
     }
@@ -17,7 +22,7 @@ export const loadStaticRoutes = (app: Application) => {
 
   app.post(`${bypassRoute}/routes`, (req, res) => {
     try {
-      createRoute(req.body);
+      createRouteAndResponse(req.body);
       res.status(200).end();
     } catch (err) {
       sendError(req, res, err, { error: "Failed to create route" });
@@ -36,7 +41,13 @@ export const loadStaticRoutes = (app: Application) => {
   app.get(`${bypassRoute}/routes/:id/responses`, (req, res) => {
     try {
       const responses = getResponsesByRouteId(req.params.id);
-      res.json(responses);
+      res.json(
+        responses.map((response) => ({
+          ...response.toJSON(),
+          response: JSON.parse(response.response),
+          headers: JSON.parse(response.headers),
+        })),
+      );
     } catch (err) {
       sendError(req, res, err, { error: "Failed to get responses" });
     }
@@ -62,7 +73,7 @@ export const loadStaticRoutes = (app: Application) => {
 
   app.post(`${bypassRoute}/postman/sync`, (req, res) => {
     try {
-      syncPostmanRoutes(req.body);
+      bulkInsertPostmanRoutes(req.body);
       res.status(200).end();
     } catch (err) {
       sendError(req, res, err, { error: "Failed to sync postman data" });

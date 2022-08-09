@@ -1,6 +1,5 @@
-import { UpdateMode } from "realm";
 import { getRealm } from "../models/database";
-import { Response as MockResponse } from "../models/response";
+import { MockResponse } from "../models/response";
 import { getRoute } from "./route";
 
 const { UUID } = Realm.BSON;
@@ -8,19 +7,19 @@ const { UUID } = Realm.BSON;
 export const ResponseSchema = {
   name: "Response",
   properties: {
-    id: "int",
+    id: "uuid",
     name: "string",
     statusCode: "int",
     response: "string",
     headers: "string",
     postmanId: "string?",
-    routeId: "int?",
+    routeId: "uuid",
   },
   primaryKey: "id",
 };
 
 export const getResponse = (id: string) => {
-  return getRealm().objectForPrimaryKey<MockResponse>(ResponseSchema.name, id);
+  return getRealm().objectForPrimaryKey<MockResponse>(ResponseSchema.name, new UUID(id));
 };
 
 export const getResponses = () => {
@@ -28,43 +27,83 @@ export const getResponses = () => {
 };
 
 export const getResponsesByRouteId = (routeId: string) => {
-  const responses = getRealm().objects(ResponseSchema.name);
-  return responses.filtered(`routeId == ${routeId}`);
+  const responses = getRealm().objects<MockResponse>(ResponseSchema.name);
+  return responses.filtered(`routeId == uuid(${routeId})`);
 };
 
 export const createResponse = (response: Omit<MockResponse, "id">) => {
   const id: any = new UUID();
-  const mockResponse = { ...response, id } as MockResponse;
+  const mockResponse = {
+    ...response,
+    id,
+    response: JSON.stringify(response.response),
+    headers: JSON.stringify(response.headers ?? {}),
+    routeId: new UUID(response.routeId) as any,
+  } as MockResponse;
   getRealm().write(() => {
-    const route = getRoute(mockResponse.routeId);
+    const route = getRoute(response.routeId);
     if (!route) {
-      throw "Failed to find route";
+      throw new Error("Failed to find route");
     }
     route.responses.push(mockResponse);
-    if (!route.curentExample) {
-      route.curentExample = mockResponse;
+    if (!route.currentExample) {
+      route.currentExample = mockResponse;
     }
-    getRealm().create(ResponseSchema.name, { ...response, id }, UpdateMode.Never);
   });
   return id;
 };
 
 export const updateResponse = (response: MockResponse) => {
+  if (response.postmanId) {
+    throw new Error("You cannot update a response from postman");
+  }
   getRealm().write(() => {
-    const routeUpdate = getRealm().objectForPrimaryKey<MockResponse>(ResponseSchema.name, response.id);
-    if (routeUpdate && !response.postmanId) {
-      routeUpdate.name = response.name;
-      routeUpdate.headers = response.headers;
-      routeUpdate.statusCode = response.statusCode;
-      routeUpdate.response = response.response;
+    const route = getRoute(response.routeId);
+    if (!route) {
+      throw new Error("Failed to find route");
+    }
+    for (let i = 0, { length } = route.responses; i < length; i++) {
+      if (new UUID(route.responses[i].id).equals(response.id)) {
+        route.responses[i].name = response.name;
+        route.responses[i].headers = JSON.stringify(response.headers ?? {});
+        route.responses[i].statusCode = response.statusCode;
+        route.responses[i].response = JSON.stringify(response.response);
+        return;
+      }
     }
   });
 };
 
 export const upsertResponse = (response: MockResponse) => {
   const id = response.id ?? new UUID();
+  const mockResponse = {
+    ...response,
+    id,
+    response: JSON.stringify(response.response),
+    headers: JSON.stringify(response.headers ?? {}),
+    routeId: new UUID(response.routeId) as any,
+  } as MockResponse;
   getRealm().write(() => {
-    getRealm().create(ResponseSchema.name, { ...response, id }, UpdateMode.Modified);
+    const route = getRoute(response.routeId);
+    if (!route) {
+      throw new Error("Failed to find route");
+    }
+    for (let i = 0, { length } = route.responses; i < length; i++) {
+      if (new UUID(route.responses[i].id).equals(response.id) && !route.responses[i].postmanId) {
+        route.responses[i].name = response.name;
+        route.responses[i].headers = JSON.stringify(response.headers ?? {});
+        route.responses[i].statusCode = response.statusCode;
+        route.responses[i].response = JSON.stringify(response.response);
+        return;
+      }
+      if (route.responses[i].id === response.id && route.responses[i].postmanId) {
+        throw new Error("You cannot update a response from postman");
+      }
+    }
+    route.responses.push(mockResponse);
+    if (!route.currentExample) {
+      route.currentExample = mockResponse;
+    }
   });
   return id;
 };
