@@ -2,7 +2,7 @@ import { Request, Response, Application } from "express";
 import { createResponse } from "./schemas/response";
 import { createRouteAndResponse, getRouteByUrlAndMethod } from "./schemas/route";
 
-const bypassRoute = process.env.BYPASS_ROUTE ?? "/mock-server/admin";
+const bypassRoute = "/mock-server/admin";
 
 const routeNotInDb = (res: Response) => res.status(404).json({ error: "Route not in DB" });
 

@@ -1,14 +1,14 @@
 {
-  "name": "mock-server-backend",
-  "version": "1.0.4",
+  "name": "mock-server",
+  "version": "1.0.5",
   "description": "",
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "docker:build": "docker build -t dzrust/mock-server-backend:$npm_package_version .",
-    "docker:build:no-cache": "docker build --no-cache -t dzrust/mock-server-backend:$npm_package_version .",
-    "docker:start": "docker run -d -p 9001:8080 dzrust/mock-server-backend:$npm_package_version",
-    "docker:deploy": "npm run docker:build && docker push dzrust/mock-server-backend:$npm_package_version"
+    "docker:build": "rm -rf ./public && cp -r ../ui/public ./ && docker build -t dzrust/mock-server:$npm_package_version .",
+    "docker:build:no-cache": "docker build --no-cache -t dzrust/mock-server:$npm_package_version .",
+    "docker:start": "docker run -d --name mock-server -p 9001:8080 dzrust/mock-server:$npm_package_version",
+    "docker:deploy": "npm run docker:build && docker push dzrust/mock-server:$npm_package_version"
   },
   "author": "",
   "license": "ISC",

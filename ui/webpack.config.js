@@ -9,8 +9,12 @@ module.exports = {
     static: {
       directory: path.join(__dirname, "public"),
     },
+    devMiddleware: {
+      index: true,
+      publicPath: "/mock-server/admin",
+    },
     compress: true,
-    port: 9000,
+    port: 8080,
     historyApiFallback: true,
   },
 };

@@ -1,11 +1,12 @@
-import { Application } from "express";
+import express, { Application } from "express";
 import { sendError } from "./error-handler";
 import { createResponse, getResponsesByRouteId, updateResponse } from "./schemas/response";
 import { bulkInsertPostmanRoutes, createRouteAndResponse, getRoutes, updateRoute } from "./schemas/route";
 
-const bypassRoute = process.env.BYPASS_ROUTE ?? "/mock-server/admin";
+const bypassRoute = "/mock-server/admin";
 
 export const loadStaticRoutes = (app: Application) => {
+  app.use(bypassRoute, express.static("public"));
   app.get(`${bypassRoute}/routes`, (req, res) => {
     try {
       res.json(

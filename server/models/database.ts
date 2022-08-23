@@ -7,7 +7,7 @@ let realm: Realm;
 export const loadRealm = async (onSuccess: Function, onFailure: Function) => {
   try {
     realm = await Realm.open({
-      path: "mockserver.realm",
+      path: "realm/mockserver.realm",
       schema: [RouteSchema, ResponseSchema],
     });
     onSuccess();

@@ -8,7 +8,7 @@ import { PostmanRoute } from "../models/postman-route";
 export const routeAPI = createApi({
   reducerPath: "routeAPI",
   tagTypes: ["Responses", "Routes"],
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:9001/mock-server/admin" }),
+  baseQuery: fetchBaseQuery(),
   endpoints: (builder) => ({
     postSyncDatabase: builder.mutation<void, void>({
       query: () => ({

@@ -81,7 +81,7 @@ export const getUrlFromPostmanRequest = (collectionRequest: CollectionRequest) =
       .map((pathPart) => encodeURIComponent(variables.has(pathPart) ? variables.get(pathPart)! : pathPart))
       .join("/") +
     queryString;
-  return url.substring(0, 750);
+  return url;
 };
 
 export const getCollectionRequestUrlVariables = (collectionRequest: CollectionRequest): Map<string, string> => {
