@@ -13,7 +13,7 @@ import "./styles/app.css";
 const App: FC = () => {
   const isLoading = useAppSelector(getIsLoading);
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/mock-server/admin">
       <Navbar bg="dark" variant="dark" fixed="top" collapseOnSelect expand="lg">
         <Container fluid>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />

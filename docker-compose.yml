@@ -1,45 +1,13 @@
 version: "3.7"
 services:
-  # ui:
-  #   build:
-  #     context: ./ui
-  #     dockerfile: ./Dockerfile
-  #   restart: always
-  #   ports:
-  #     - 9000:80
-
   server:
     build:
       context: ./server
       dockerfile: ./Dockerfile
-    environment:
-      BYPASS_ROUTE: /ent/admin
-      MYSQL_ROOT_PASSWORD: my_secret_password
-      DATABASE: app_db
-      DATABASE_USER: db_user
-      DATABASE_PASSWORD: db_user_pass
-      DATABASE_HOST: db
-      DATABASE_PORT: 3306
-    links:
-      - db:db
     ports:
       - 9001:8080
-
-  db:
-    image: mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: my_secret_password
-      MYSQL_DATABASE: app_db
-      MYSQL_USER: db_user
-      MYSQL_PASSWORD: db_user_pass
-    cap_add:
-      - SYS_NICE
-    ports:
-      - "3306:3306"
-    expose:
-      - 3306
     volumes:
-      - dbdata:/var/lib/mysql
+      - dbdata:/server/realm
 
 volumes:
   dbdata:

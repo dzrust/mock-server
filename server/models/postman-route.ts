@@ -1,10 +1,10 @@
 import { CollectionFolder, CollectionTemplate, CollectionRequestResponse, CollectionRequest } from "./collection";
-import { Route } from "./route";
-import { Response } from "./response";
+import { MockRoute } from "./route";
+import { MockResponse } from "./response";
 
 export type PostmanRoute = {
-  responses: Response[];
-} & Route;
+  responses: MockResponse[];
+} & MockRoute;
 
 export const transformCollectionToRoutes = (item: (CollectionFolder | CollectionTemplate)[]): PostmanRoute[] => {
   const postmanRoutes: PostmanRoute[] = [];
@@ -42,10 +42,10 @@ export const transformCollectionToRoutes = (item: (CollectionFolder | Collection
 
 export const getRoutesFromResponses = (
   collectionTemplate: CollectionTemplate,
-): { newRoutes: PostmanRoute[]; responses: Response[] } => {
+): { newRoutes: PostmanRoute[]; responses: MockResponse[] } => {
   const newRoutes: PostmanRoute[] = [];
   const newRoutesMap: Map<string, PostmanRoute> = new Map<string, PostmanRoute>();
-  const responses: Response[] = [];
+  const responses: MockResponse[] = [];
   const url = getUrlFromPostmanRequest(collectionTemplate.request);
   collectionTemplate.response.forEach((response) => {
     const responseUrl = getUrlFromPostmanRequest(response.originalRequest);
@@ -110,14 +110,14 @@ export const transformCollectionRouteToPostmanRoute = (
     name: name,
     defaultUrl: url,
     method: collectionRequest.method,
-    responses: [] as Response[],
+    responses: [] as MockResponse[],
     postmanId: id,
   } as PostmanRoute;
 };
 
 export const transformCollectionResponseToPostmanRouteResponse = (
   collectionRequestResponse: CollectionRequestResponse,
-): Response => {
+): MockResponse => {
   const headers = {} as any;
   (collectionRequestResponse.header ?? []).forEach((header) => {
     headers[header.key] = header.value;
@@ -134,5 +134,5 @@ export const transformCollectionResponseToPostmanRouteResponse = (
     response,
     headers,
     postmanId: collectionRequestResponse.id,
-  } as Response;
+  } as MockResponse;
 };

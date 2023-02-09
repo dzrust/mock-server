@@ -36,7 +36,7 @@ const SelectedRouteView: FC<Props> = ({ route, setResponse }) => {
   const setActiveResponse = (response: Response) =>
     updateRoute({
       ...route,
-      currentExampleId: response.id,
+      currentExample: response,
     })
       .then(refetch)
       .catch(() => {
@@ -60,10 +60,11 @@ const SelectedRouteView: FC<Props> = ({ route, setResponse }) => {
       initialValues={
         {
           name: route.name,
-          url: route.url,
+          url: route.url ?? "",
           method: route.method,
         } as RouteFormModelType
       }
+      enableReinitialize
       validationSchema={routeFormModel}
     >
       {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (
@@ -92,7 +93,7 @@ const SelectedRouteView: FC<Props> = ({ route, setResponse }) => {
                 <Form.Control
                   name="url"
                   placeholder="Url"
-                  value={values.url}
+                  value={values.url ?? ""}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   isInvalid={!!errors.url && !!touched.url}
@@ -159,7 +160,7 @@ const SelectedRouteView: FC<Props> = ({ route, setResponse }) => {
                         </Button>
                       </td>
                       <td>
-                        {route.currentExampleId === row.id ? (
+                        {route.currentExample?.id === row.id ? (
                           "Active Response"
                         ) : (
                           <Button variant="primary" onClick={() => setActiveResponse(row)}>

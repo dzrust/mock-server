@@ -1,4 +1,6 @@
-FROM node:16-alpine3.15
+FROM node:18
+
+WORKDIR /server 
 
 COPY package*.json ./
 
@@ -8,4 +10,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD [ "node", "index.js" ]
+CMD [ "npx", "ts-node", "index.ts" ]
